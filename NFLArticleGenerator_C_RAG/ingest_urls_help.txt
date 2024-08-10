@@ -1,0 +1,23 @@
+
+ingest_urls.py takes the provided URL(s) and ingests/embeds it/them into
+a vectorstore database for use by the C-RAG when making
+generations. Think of it as providing a source for the C-RAG to use.
+
+Usage:
+  python ingest_urls.py [URL(s)] [optional parameters]
+  If an optional parameter is passed multiple times, the last value
+  will be used. Optional parameters can be passed in any order.
+
+Parameters:
+  [URL(s)]: The URL(s) to ingest.
+    Must be the first parameter when calling the script. To pass a single URL
+    simply pass the URL as the first parameter. To pass a list of URLs, pass
+    the name of a .txt file that has one URL on each line and no other text.
+
+  -s[chunk size (optional)]: The size that each chunk should be when splitting the URL.
+    Optional, defaults to 250 if no value provided. Must be preceded with -s
+    (for example: -s300 to pass a chunk size of 300).
+
+  -o[chunk overlap (optional)]: The chunk size to use when splitting the URL.
+    Optional, defaults to 50 if no value provided. Must be preceded with -o
+    (for example: -o75 to pass a chunk overlap of 75).
