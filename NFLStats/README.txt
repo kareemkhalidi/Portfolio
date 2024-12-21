@@ -2,7 +2,7 @@ This project processes play-by-play data from NFL games to calculate and extract
 
 Features:
 - Compare matchups between two teams by season, offensive team, defensive team, and stat type.
-- Dynamic calculations for team-specific performance metrics using the nfl_stats class.
+- Perform dynamic calculations for team-specific performance metrics using the nfl_stats class.
 
 Usage:
 - To analyze a matchup, run nfl_stats.py and provide the following inputs:
@@ -11,7 +11,8 @@ Usage:
   - Defensive team
   - Desired stat type (pass, rush, rec)
 - The script will calculate and display the requested statistics.
-- The nfl_stats class is designed for versatility and can support a wide range of additional use cases.
+- The NFLStats class is designed for versatility and can support a wide range of use cases.
+- The console output style report is just meant to show the functionality of the NFLStats class.
 
 Potential Future Additions:
 - Player-Specific Statistics: Add functionality to work with stats for individual players more easily.
