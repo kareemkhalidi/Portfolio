@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Stats Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: #000;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #000;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #000;
+            font-size: 14px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 5px;
+            transform: scale(1.2);
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #000;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #000;
+            font-size: 14px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #555;
+            background-color: #f9f9f9;
+        }
+
+        option {
+            background-color: #fff;
+            color: #000;
+        }
+
+        button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #fff;
+            background-color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        form {
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #000;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .input_pair {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex: 1;
+        }
+
+        .input_pair label {
+            flex: 1;
+            text-align: left;
+        }
+
+        .input_pair div, .input_pair select, .input_pair input[type="number"] {
+            flex: 1;
+        }
+
+        .input_pair div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            form {
+                padding: 15px;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .input-pair {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <script>
+        // HANDLE CHANGES TO VALUE IN SEARCH TYPE SELECT
+        function handleSearchTypeChange() {
+            // get selected search type
+            const searchTypeValue = document.getElementById('search_type_select').value;
+
+            // show/block advanced fields based on selection
+            const advancedFieldsDiv = document.getElementById('advanced_fields_div');
+            advancedFieldsDiv.style.display = searchTypeValue === 'advanced' ? 'block' : 'none';
+        }
+
+        // HANDLE CHANGES TO VALUE IN STAT TYPE SELECT
+        function handleStatTypeChange() {
+            // get selected stat type
+            const statTypeValue = document.getElementById('stat_type_select').value;
+
+            // get divs containing passing and rushing specific elements
+            const passInputLabelsDiv = document.getElementById('pass_input_labels_div');
+            const passInputsDiv = document.getElementById('pass_inputs_div');
+            const rushInputLabelsDiv = document.getElementById('rush_input_labels_div');
+            const rushInputsDiv = document.getElementById('rush_inputs_div');
+
+            // show/hide passing inputs based on stat type
+            if (statTypeValue === 'passing') {
+                passInputLabelsDiv.style.display = 'flex';
+                passInputsDiv.style.display = 'flex';
+            } else {
+                passInputLabelsDiv.style.display = 'none';
+                passInputsDiv.style.display = 'none';
+            }
+
+            // show/hide rushing inputs based on stat type
+            if (statTypeValue === 'rushing') {
+                rushInputLabelsDiv.style.display = 'flex';
+                rushInputsDiv.style.display = 'flex';
+            } else {
+                rushInputLabelsDiv.style.display = 'none';
+                rushInputsDiv.style.display = 'none';
+            }
+        }
+
+        // HANDLE CHANGES TO VALUE IN RUSH LOCATION SELECT
+        function handleRushLocChange() {
+            // get selected rush location
+            const rushLocValue = document.getElementById('rush_loc_select').value;
+
+            // show/hide rush gap elements based on selection
+            const rushGapLabel = document.getElementById('rush_gap_label');
+            const rushGapSelect = document.getElementById('rush_gap_select');
+            rushGapLabel.style.display = rushLocValue !== 'middle' ? 'inline' : 'none';
+            rushGapSelect.style.display = rushLocValue !== 'middle' ? 'inline' : 'none';
+        }
+
+        // TRIGGER STAT TYPE CHANGE HANDLER WHEN WINDOW LOADS TO DISPLAY THE CORRECT FIELDS WHEN PAGE FIRST LOADS
+        window.onload = function() {
+            handleStatTypeChange();
+        };
+
+        // VALIDATE DATA ENTERED UPON FORM SUBMISSION
+        function validateForm(event) {
+            // verify at least one down is selected
+            const down1CheckBox = document.getElementById('down_1_checkbox');
+            const down2CheckBox = document.getElementById('down_2_checkbox');
+            const down3CheckBox = document.getElementById('down_3_checkbox');
+            const down4CheckBox = document.getElementById('down_4_checkbox');
+            if (!down1CheckBox.checked && !down2CheckBox.checked && !down3CheckBox.checked && !down4CheckBox.checked) {
+                event.preventDefault();
+                alert('Please select at least one Down.');
+            }
+
+            // verify at least one quarter is selected
+            const qtr1CheckBox = document.getElementById('qtr_1_checkbox');
+            const qtr2CheckBox = document.getElementById('qtr_2_checkbox');
+            const qtr3CheckBox = document.getElementById('qtr_3_checkbox');
+            const qtr4CheckBox = document.getElementById('qtr_4_checkbox');
+            const qtr5CheckBox = document.getElementById('qtr_5_checkbox');
+            if (!qtr1CheckBox.checked && !qtr2CheckBox.checked && !qtr3CheckBox.checked && !qtr4CheckBox.checked && !qtr5CheckBox.checked) {
+                event.preventDefault();
+                alert('Please select at least one Quarter.');
+            }
+
+            // verify point differential range is valid
+            const ptDiffMinValue = document.getElementById('pt_diff_min_input').value;
+            const ptDiffMaxValue = document.getElementById('pt_diff_max_input').value;
+            if (ptDiffMinValue >= ptDiffMaxValue) {
+                event.preventDefault();
+                alert('Please ensure that the point differential is of the format [Minimum Differential, Maximum Differential].');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>NFL Stats Viewer</h1>
+    <form action="/submit" method="post" onsubmit="validateForm(event)">
+        <!-- GET SEARCH TYPE AND SEASON INPUTS -->
+        <div class="input_pair">
+            <label>Search Type</label>
+            <label>Season</label>
+        </div>
+        <div class="input_pair">
+            <!-- search type input -->
+            <select id="search_type_select" name="search_type" onchange="handleSearchTypeChange()">
+                <option value="basic">Basic</option>
+                <option value="advanced">Advanced</option>
+            </select>
+            <!-- season input -->
+            <select id="season_select" name="season">
+                {% for season in seasons %}
+                    <option value="{{ season }}">{{ season }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- GET TEAM AND SIDE OF BALL INPUTS -->
+        <div class="input_pair">
+            <label>Team</label>
+            <label>Stat Type</label>
+        </div>
+        <div class="input_pair">
+            <!-- team input -->
+            <select id="team_select" name="team">
+                {% for team in teams %}
+                    <option value="{{ team }}">{{ team }}</option>
+                {% endfor %}
+            </select>
+            <!-- stat type input -->
+            <select id="stat_type_select" name="stat_type" onchange="handleStatTypeChange()">
+                <option value="passing">Passing</option>
+                <option value="rushing">Rushing</option>
+            </select>
+        </div>
+
+        <!-- GET SIDE OF BALL AND POSITION INPUTS -->
+        <div class="input_pair">
+            <label>Side of Ball</label>
+            <label>Position</label>
+        </div>
+        <div class="input_pair">
+            <!-- side of ball input -->
+            <select id="side_of_ball_select" name="side_of_ball">
+                <option value="offense">Offense</option>
+                <option value="defense">Defense</option>
+            </select>
+            <!-- position input -->
+            <select id="position_select" name="position">
+                <option value="all">All Positions</option>
+                <option value="QB">Quarterbacks</option>
+                <option value="RB">Running Backs</option>
+                <option value="WR">Wide Receivers</option>
+                <option value="TE">Tight Ends</option>
+                <option value="OL">Offensive Linemen</option>
+            </select>
+        </div>
+
+        <!-- GET PASS LENGTH AND LOCATION INPUTS -->
+        <div id="pass_input_labels_div" class="input_pair">
+            <label id="pass_len_label">Pass Length</label>
+            <label id="pass_loc_label">Pass Location</label>
+        </div>
+        <div id="pass_inputs_div" class="input_pair">
+            <!-- pass length input -->
+            <select id="pass_len_select" name="pass_len">
+                <option value="all">All Pass Lengths</option>
+                <option value="short">Short (<= 15 air yds)</option>
+                <option value="deep">Deep (> 15 air yds)</option>
+            </select>
+            <!-- pass location input -->
+            <select id="pass_loc_select" name="pass_loc">
+                <option value="all">All Pass Locations</option>
+                <option value="left">Left</option>
+                <option value="middle">Middle</option>
+                <option value="right">Right</option>
+            </select>
+        </div>
+
+        <!-- GET RUSH LOCATION AND GAP INPUTS -->
+        <div id="rush_input_labels_div" class="input_pair">
+            <label id="rush_loc_label">Rush Location</label>
+            <label id="rush_gap_label">Rush Gap</label>
+        </div>
+        <div id="rush_inputs_div" class="input_pair">
+            <!-- rush location input -->
+            <select id="rush_loc_select" name="rush_loc" onchange="handleRushLocChange()">
+                <option value="all">All Rush Locations</option>
+                <option value="left">Left</option>
+                <option value="middle">Middle</option>
+                <option value="right">Right</option>
+            </select>
+            <!-- rush gap input -->
+            <select id="rush_gap_select" name="rush_gap">
+                <option value="all">All Rush Gaps</option>
+                <option value="end">End</option>
+                <option value="tackle">Tackle</option>
+                <option value="guard">Guard</option>
+            </select>
+        </div>
+
+        <!-- ADVANCED FIELDS -->
+        <div id="advanced_fields_div" style="display: none;">
+            <h3>Advanced Filters</h3>
+            <!-- GET DOWNS AND YDS UNTIL FIRST DOWN INPUTS -->
+            <div class="input_pair">
+                <label>Downs</label>
+                <label>Yards Until First Down</label>
+            </div>
+            <div class="input_pair">
+                <!-- downs input -->
+                <div>
+                    <input type="checkbox" id="down_1_checkbox" name="downs" value="1" checked>1st
+                    <input type="checkbox" id="down_2_checkbox" name="downs" value="2" checked>2nd
+                    <input type="checkbox" id="down_3_checkbox" name="downs" value="3" checked>3rd
+                    <input type="checkbox" id="down_4_checkbox" name="downs" value="4" checked>4th
+                </div>
+                <!-- yds until fd input -->
+                <div>
+                    <select id="yds_until_fd_select" name="yds_until_fd_dir">
+                        <option value=">=">>=</option>
+                        <option value="<="><=</option>
+                    </select>
+                    <input type="number" id="yds_until_fd_num_input" name="yds_until_fd" min="1">
+                </div>
+            </div>
+
+            <!-- GET GOAL TO GO AND POINT DIFFERENTIAL INPUTS -->
+            <div class="input_pair">
+                <label>Goal to Go?</label>
+                <label>Point Differential (Range)</label>
+            </div>
+            <div class="input_pair">
+                <!-- goal to go input -->
+                <div>
+                    <select id="goal_to_go_select" name="goal_to_go">
+                        <option value=""></option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                <!-- pt diff input -->
+                <div>
+                    <input type="number" id="pt_diff_min_input" name="pt_diff_min" min="-99" max="99" value="-99" required>
+                    <input type="number" id="pt_diff_max_input" name="pt_diff_max" min="-99" max="99" value="99" required>
+                </div>
+            </div>
+
+            <!-- GET QUARTERS AND TIME LEFT IN QUARTERS INPUTS -->
+            <div class="input_pair">
+                <label>Quarters</label>
+                <label>Seconds Remaining in Quarter</label>
+            </div>
+            <div class="input_pair">
+                <!-- qtrs input -->
+                <div>
+                    <input type="checkbox" id="qtr_1_checkbox" name="qtrs" value="1" checked>1st
+                    <input type="checkbox" id="qtr_2_checkbox" name="qtrs" value="2" checked>2nd
+                    <input type="checkbox" id="qtr_3_checkbox" name="qtrs" value="3" checked>3rd
+                    <input type="checkbox" id="qtr_4_checkbox" name="qtrs" value="4" checked>4th
+                    <input type="checkbox" id="qtr_5_checkbox" name="qtrs" value="5">OT
+                </div>
+                <!-- qtr time left input -->
+                <div>
+                    <select id="qtr_time_left_select" name="qtr_time_left_dir">
+                        <option value=">=">>=</option>
+                        <option value="<="><=</option>
+                    </select>
+                    <input type="number" id="qtr_time_left_input" name="qtr_time_left" min="1">
+                </div>
+            </div>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+    <br>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Stats Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px auto;
+            width: 90%;
+        }
+
+        .chart {
+            width: 45%;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>{{ team }} Passing {{ side_of_ball }} - Passes to {{ pass_loc }} of Field</h1>
+
+    <!-- PASSING STATS TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>Attempts</th>
+                <th>Completions</th>
+                <th>Passing Yds</th>
+                <th>Passing Tds</th>
+                <th>Interceptions</th>
+                <th>Yds per Attempt</th>
+                <th>Yds per Completion</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for item in pass_stats %}
+                <td>{{ item }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ATTEMPTS AND YARDS PER ATTEMPT CHARTS -->
+    <div class="chart-container">
+        <div class="chart">
+            <canvas id="att_chart"></canvas>
+        </div>
+        <div class="chart">
+            <canvas id="ypatt_chart"></canvas>
+        </div>
+    </div>
+
+    <!-- COMPLETIONS AND YARDS PER COMPLETION CHARTS -->
+    <div class="chart-container">
+        <div class="chart">
+            <canvas id="cmp_chart"></canvas>
+        </div>
+        <div class="chart">
+            <canvas id="ypcmp_chart"></canvas>
+        </div>
+    </div>
+
+    <!-- HOME PAGE BUTTON -->
+    <button onclick="window.location.href='/'">Back to Home</button>
+
+    <script>
+        // get data for bar charts
+        const attChartData = {{ att_chart_data | safe }};
+        const ypattChartData = {{ ypatt_chart_data | safe }};
+
+        const cmpChartData = {{ cmp_chart_data | safe }};
+        const ypcmpChartData = {{ ypcmp_chart_data | safe }};
+
+        // create the first bar chart
+        const ctx1 = document.getElementById('att_chart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['Short', 'Deep'],
+                datasets: [{
+                    label: 'Attempts',
+                    data: attChartData,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderColor: 'rgba(0, 0, 0, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Pass Type'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Attempts'
+                        }
+                    }
+                }
+            }
+        });
+
+        // create the second bar chart
+        const ctx2 = document.getElementById('ypatt_chart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Short', 'Deep'],
+                datasets: [{
+                    label: 'Yds Per Attempt',
+                    data: ypattChartData,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderColor: 'rgba(0, 0, 0, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Pass Type'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Yds Per Attempt'
+                        }
+                    }
+                }
+            }
+        });
+
+        // create the third bar chart
+        const ctx3 = document.getElementById('cmp_chart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: ['Short', 'Deep'],
+                datasets: [{
+                    label: 'Completions',
+                    data: cmpChartData,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderColor: 'rgba(0, 0, 0, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Pass Type'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Completions'
+                        }
+                    }
+                }
+            }
+        });
+
+        // create the fourth bar chart
+        const ctx4 = document.getElementById('ypcmp_chart').getContext('2d');
+        new Chart(ctx4, {
+            type: 'bar',
+            data: {
+                labels: ['Short', 'Deep'],
+                datasets: [{
+                    label: 'Yds Per Completion',
+                    data: ypcmpChartData,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderColor: 'rgba(0, 0, 0, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Pass Type'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Yds Per Completion'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

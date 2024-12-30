@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Stats Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px auto;
+            width: 90%;
+        }
+
+        .chart {
+            width: 45%;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>{{ team }} Rushing {{ side_of_ball }} - {{ rush_loc }}{{ rush_gap }} Rushes</h1>
+
+    <!-- RUSHING STATS TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>Carries</th>
+                <th>Rushing Yds</th>
+                <th>Rushing Tds</th>
+                <th>Yds per Carry</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for item in rush_stats %}
+                <td>{{ item }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
