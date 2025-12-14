@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request
 from nfl_stats import NFLStats
+import os
 
 app = Flask(__name__)
-nfl = NFLStats()
+db_password = os.getenv("DB_PASSWORD")
+nfl = NFLStats(db_password)
 
 @app.route('/')
 def home():

@@ -1,10 +1,11 @@
-import nfl_data_py as nfl # pip install nfl-data-py (note: not compatible with python 3.12, must use 3.11 or earlier)
-import pandas as pd # pip install pandas
+import pandas as pd
+from sqlalchemy import create_engine
 
 class NFLStats:
     """Class for working with play by play data for the NFL."""
 
     SEASONS = [
+        2025,
         2024,
         2023,
         2022,
@@ -46,9 +47,11 @@ class NFLStats:
         'WAS',
     ]
 
-    def __init__(self):
-        self._pbp_data = {}
-        self._roster_data = {}
+    def __init__(self, password):
+        self._engine = create_engine(
+            f"postgresql+psycopg2://pgadmin:{password}@database.postgres.database.azure.com:5432/postgres",
+            connect_args={"sslmode": "require"}
+        )
 
     def get_pbp_data(self, season):
         """
@@ -58,12 +61,8 @@ class NFLStats:
         :return: pd.Dataframe containing all pbp data for the selected season.
         """
 
-        # IMPORT AND SAVE SEASON PBP DATA IF IT HAS NOT YET BEEN SAVED
-        if season not in self._pbp_data.keys():
-            self._pbp_data[season] = nfl.import_pbp_data([season])
-            self._pbp_data[season] = nfl.clean_nfl_data(self._pbp_data[season])
-            self._pbp_data[season] = self._pbp_data[season].fillna(0)
-        return self._pbp_data[season]
+        query = f"SELECT * FROM pbp_{season};"
+        return pd.read_sql(query, self._engine)
 
     def _get_roster_data(self, season):
         """
@@ -73,10 +72,8 @@ class NFLStats:
         :return: pd.Dataframe containing seasonal roster data for all NFL teams.
         """
 
-        # IMPORT AND SAVE PLAYER ROSTER DATA IF IT HAS NOT YET BEEN SAVED
-        if season not in self._roster_data.keys():
-            self._roster_data[season] = nfl.import_seasonal_rosters([season])
-        return self._roster_data[season]
+        query = f"SELECT * FROM roster_{season};"
+        return pd.read_sql(query, self._engine)
 
     def _get_player_pos(self, player_id, season):
         """
