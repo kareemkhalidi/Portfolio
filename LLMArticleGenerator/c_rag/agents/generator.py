@@ -19,7 +19,7 @@ Prompt: {prompt}
 Context: {context} 
 Generation:
 '''
-os.environ['LANGCHAIN_API_KEY'] = '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'
+os.environ['LANGCHAIN_API_KEY'] = ''
 prompt = hub.pull('sports-article-generator-rag-prompt:26bb3220')
 
 # build llm using expected output format and build a pipe from the prompt to the llm
