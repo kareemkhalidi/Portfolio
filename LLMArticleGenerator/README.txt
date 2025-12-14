@@ -1,7 +1,7 @@
-NFL Article Generator Corrective Retrieval Augmented Generate
+Article Generator Corrective Retrieval Augmented Generate
 
 Corrective-RAG made up of various large language models for generating accurate, high
-quality articles about the National Football League.
+quality articles. Trained on data from the Seattle Seahawks NFL team.
 
 To add documents to the vectorstore for usage in the article:
     - use the ingest_urls.py script
